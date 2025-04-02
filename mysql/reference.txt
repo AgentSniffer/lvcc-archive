@@ -1,0 +1,81 @@
+--gawa ni ©️samuel binos©
+--©️sam.inc.
+
+CREATE DATABASE adventure_quest;
+
+USE adventure_quest;
+
+CREATE TABLE players (
+player_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
+level INT NOT NULL DEFAULT 1,
+gold BIGINT NOT NULL DEFAULT 0,
+health INT NOT NULL DEFAULT 100,
+class VARCHAR(255) NOT NULL DEFAULT 'warrior',
+last_logout_in DATETIME NOT NULL
+);
+
+CREATE TABLE enemies (
+enemy_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
+level INT NOT NULL DEFAULT 1,
+gold BIGINT NOT NULL DEFAULT 0,
+health INT NOT NULL DEFAULT 100,
+class VARCHAR(255) NOT NULL DEFAULT 'zombie',
+last_logout_in DATETIME NOT NULL
+);
+
+CREATE TABLE items (
+item_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
+description TEXT NOT NULL,
+is_consummable BOOLEAN DEFAULT FALSE,
+consummable_start_time TIME NULL,
+consummable_end_time TIME NULL,
+price DECIMAL(8, 2) DEFAULT 0.00 NOT NULL,
+type ENUM('food', 'armor', 'sword', 'potion', 'others') DEFAULT 'food' NOT NULL,
+rarity ENUM('common', 'rare', 'legend') DEFAULT 'common' NOT NULL
+);
+
+CREATE TABLE purchases (
+player_id BIGINT NOT NULL,
+item_id BIGINT NOT NULL,
+FOREIGN KEY (player_id) REFERENCES players(player_id),
+FOREIGN KEY (item_id) REFERENCES items(item_id)
+);
+--============================================
+--nag insert na tayo ng values sa mga tables. (note: pwede mong dagdagan.)
+
+--para sa players table.
+INSERT INTO players VALUES
+(NULL, 'Sir Lancelot', 45, 2500, 150, 'paladin', CURRENT_TIMESTAMP),
+(NULL, 'Merlin', 99, 99999, 500, 'wizard', '2023-10-16 09:00:00');
+
+INSERT INTO enemies VALUES
+(NULL, 'Goblin', 5, 10, 50, 'goblin', NOW()),
+(NULL, 'Lich King', 100, 5000, 2500, 'undead', '2023-10-15 23:59:59');
+
+--para sa items table.
+INSERT INTO items VALUES
+(NULL, 'Health Potion', 'Restores 50 HP', FALSE, NULL, NULL, 25.00, 'potion', 'common'),
+(NULL, 'Dragon Sword', 'Fire-enchanted blade', DEFAULT, NULL, NULL, 1500.00, 'sword', 'legend'),
+(NULL, 'Iron Rations', 'Basic adventuring food', TRUE, '08:00', '20:00', 5.00, 'food', DEFAULT);
+
+--para sa purchases table.
+INSERT INTO purchases VALUES
+(1, 1),
+(1, 2),
+(1, 3);
+
+--note: kaperehas lang naman sya nung nasa taas mag automated nga lang di mo na need manually.
+INSERT INTO PURCHASES (player_id, item_id) SELECT 1, item_id FROM items;
+--============================================
+--for showing specific things lang.
+SELECT players.name, items.name, items.description FROM players JOIN purchases ON players.player_id = purchases.player_id JOIN items ON items.item_id = purchases.item_id WHERE players.player_id = 1;
+
+--or (highlight mo tong lahat. same lang to ng sa taas mas ma intidihang mo lang ito):
+SELECT players.name, items.name, items.description
+FROM players
+JOIN purchases ON players.player_id = purchases.player_id
+JOIN items ON items.item_id = purchases.item_id
+WHERE players.player_id = 1;
